@@ -32,3 +32,5 @@ lerna-debug.log*
 # Cache
 .vite-node
 .cache
+
+.vscode/
