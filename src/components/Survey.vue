@@ -2,6 +2,12 @@
   <div class="survey-container">
     <h1 class="main-title">여행 스타일 테스트</h1>
 
+    <!-- Loading Overlay -->
+    <div v-if="isSubmitting" class="loading-overlay">
+      <div class="loading-spinner"></div>
+      <p>결과를 처리 중입니다. 잠시만 기다려주세요...</p>
+    </div>
+
     <!-- Progress Bar -->
     <div class="progress-bar-container">
       <div class="progress-bar" :style="{ width: progress + '%' }"></div>
@@ -218,9 +224,6 @@ async function submitsurvey() {
     submittedData.value = payload;
     alert('성공적으로 제출되었습니다!');
   } catch (error) {
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
     console.log('Error submitting survey:', error);
     alert('API 전송에 실패했습니다. 콘솔을 확인하세요.');
   } finally {
@@ -371,5 +374,34 @@ pre {
   white-space: pre-wrap;
   word-wrap: break-word;
   margin-top: 20px;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.loading-spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #ff8b80;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style>
