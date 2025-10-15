@@ -37,10 +37,40 @@
     </div>
 
     <!-- Result -->
-    <div v-if="surveyCompleted" class="result-container">
-      <h4>제출 완료!</h4>
-      <p>결과를 서버로 전송했습니다.</p>
-      <pre>{{ submittedData }}</pre>
+    <div v-if="surveyCompleted && result" class="result-display">
+      <div class="result-header">
+        <h2>{{ result.city }}, {{ result.country }}로 떠나는 당신을 위한 추천!</h2>
+        <p class="recommendation-text">"{{ result.recommendation }}"</p>
+      </div>
+
+      <div class="result-details">
+        <div class="detail-item">
+          <span class="detail-label">여행 기간</span>
+          <span class="detail-value">{{ result.period }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">추천 시기</span>
+          <span class="detail-value">{{ result.bestSeason }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">예상 경비</span>
+          <span class="detail-value">{{ result.estimatedBudget }}</span>
+        </div>
+      </div>
+
+      <div class="itinerary-section">
+        <h3>상세 일정</h3>
+        <ul class="itinerary-list">
+          <li v-for="item in result.itinerary" :key="item.dayNumber" class="itinerary-item">
+            <div class="day-number">Day {{ item.dayNumber }}</div>
+            <div class="day-plan">{{ item.plan }}</div>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div v-else-if="surveyCompleted" class="result-container">
+        <h4>제출 완료!</h4>
+        <p>결과를 받아오는 중입니다...</p>
     </div>
 
     <!-- Navigation -->
@@ -161,7 +191,7 @@ const questions = ref([
 const currentQuestionIndex = ref(0);
 const answers = ref(Array(questions.value.length).fill(null));
 const surveyCompleted = ref(false);
-const submittedData = ref(null);
+const result = ref(null);
 const isSubmitting = ref(false);
 
 const progress = computed(() => {
@@ -221,8 +251,8 @@ async function submitsurvey() {
     const response = await api.post('/api/survey', payload);
     console.log(response);
     payload.guestToken = response.headers['x-guest-token'];
-    submittedData.value = payload;
-    alert('성공적으로 제출되었습니다!');
+    result.value = response.data;
+    // alert('성공적으로 제출되었습니다!'); // 결과 표시 후 alert 제거
   } catch (error) {
     console.log('Error submitting survey:', error);
     alert('API 전송에 실패했습니다. 콘솔을 확인하세요.');
@@ -366,14 +396,7 @@ async function submitsurvey() {
 }
 
 pre {
-  background-color: #333;
-  color: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  text-align: left;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  margin-top: 20px;
+  display: none; /* 결과가 오면 새 UI로 보여주므로 기존 pre는 숨김 */
 }
 
 .loading-overlay {
@@ -403,5 +426,105 @@ pre {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.result-display {
+  width: 100%;
+  max-width: 800px;
+  margin-top: 40px;
+  background-color: #333;
+  border-radius: 12px;
+  padding: 30px;
+  border: 1px solid #555;
+}
+
+.result-header h2 {
+  font-family: 'Nanum Myeongjo', serif;
+  font-size: 2.2rem;
+  color: #ff8b80;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.recommendation-text {
+  font-size: 1.2rem;
+  color: #eee;
+  text-align: center;
+  margin-bottom: 30px;
+  font-style: italic;
+}
+
+.result-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px;
+  background-color: #383838;
+  border-radius: 8px;
+}
+
+.detail-label {
+  font-size: 0.9rem;
+  color: #aaa;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.detail-value {
+  font-size: 1.1rem;
+  color: #fff;
+  font-weight: bold;
+}
+
+.itinerary-section h3 {
+  font-size: 1.8rem;
+  color: #ff8b80;
+  margin-bottom: 20px;
+  text-align: center;
+  border-bottom: 2px solid #555;
+  padding-bottom: 10px;
+}
+
+.itinerary-list {
+  list-style: none;
+  padding: 0;
+}
+
+.itinerary-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 15px;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  border-left: 5px solid #ff8b80;
+  transition: background-color 0.3s;
+}
+
+.itinerary-item:hover {
+    background-color: #3a3a3a;
+}
+
+.day-number {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #ff8b80;
+  margin-right: 20px;
+  flex-shrink: 0;
+}
+
+.day-plan {
+  font-size: 1rem;
+  color: #ddd;
 }
 </style>
