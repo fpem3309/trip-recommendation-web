@@ -18,6 +18,8 @@ lerna-debug.log*
 .env.*.local
 *.local
 
+.env.*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
