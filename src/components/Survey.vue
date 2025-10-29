@@ -54,7 +54,7 @@
         </div>
         <div class="detail-item">
           <span class="detail-label">예상 경비</span>
-          <span class="detail-value">{{ Math.floor(result.estimatedBudget).toLocaleString() }}</span>
+          <span class="detail-value">{{ Math.floor(result.estimatedBudget).toLocaleString() }}원</span>
         </div>
       </div>
 
