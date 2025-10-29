@@ -106,7 +106,8 @@ const questions = ref([
       { label: '1박2일', value: '1박2일' },
       { label: '2박3일', value: '2박3일' },
       { label: '3박4일', value: '3박4일' },
-      { label: '4박5일', value: '4박5일' }
+      { label: '4박5일', value: '4박5일' },
+      { label: '5박6일 이상', value: '5박6일 이상' }
     ]
   },
   {
@@ -115,15 +116,18 @@ const questions = ref([
       { label: '1명', value: '1명' },
       { label: '2명', value: '2명' },
       { label: '3명', value: '3명' },
-      { label: '4명이상', value: '4명이상' }
+      { label: '4명', value: '4명' },
+      { label: '5명 이상', value: '5명 이상' }
     ]
   },
   {
     question: '예산은?',
     options: [
-      { label: '100만원 이하', value: '100만원 이하' },
-      { label: '100만원 ~ 200만원', value: '100만원 ~ 200만원' },
-      { label: '200만원 ~ 300만원', value: '200만원 ~ 300만원' },
+      { label: '20만원 이하', value: '20만원 이하' },
+      { label: '20만원 ~ 50만원', value: '20만원~50만원' },
+      { label: '50만원 ~ 100만원', value: '50만원~100만원' },
+      { label: '100만원 ~ 200만원', value: '100만원~200만원' },
+      { label: '200만원 ~ 300만원', value: '200만원~300만원' },
       { label: '300만원 이상', value: '300만원 이상' }
     ]
   },
