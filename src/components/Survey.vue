@@ -46,7 +46,7 @@
       <div class="result-details">
         <div class="detail-item">
           <span class="detail-label">여행 기간</span>
-          <span class="detail-value">{{ result.period }}</span>
+          <span class="detail-value">{{ result.period }}박{{ parseInt(result.period) + 1 }}일</span>
         </div>
         <div class="detail-item">
           <span class="detail-label">추천 시기</span>
