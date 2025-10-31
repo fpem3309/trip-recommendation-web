@@ -16,10 +16,10 @@
 
     <!-- Question -->
     <div class="question-container" v-if="!surveyCompleted">
-      <h3 class="question-title">{{ questions[currentQuestionIndex].question }}</h3>
+      <h3 class="question-title">{{ questions[currentQuestionIndex]?.question }}</h3>
       <div class="options-container">
         <label
-          v-for="(option, index) in questions[currentQuestionIndex].options"
+          v-for="(option, index) in questions[currentQuestionIndex]?.options"
           :key="index"
           class="option"
           :class="{ selected: answers[currentQuestionIndex] === option.value }"
@@ -89,116 +89,31 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onBeforeMount, } from 'vue';
 import api from '../api';
 
-const questions = ref([
-  {
-    question: '국내여행 vs 해외여행',
-    options: [
-      { label: '국내여행', value: 'DOMESTIC' },
-      { label: '해외여행', value: 'OVERSEAS' }
-    ]
-  },
-  {
-    question: '여행 기간은?',
-    options: [
-      { label: '1박2일', value: '1박2일' },
-      { label: '2박3일', value: '2박3일' },
-      { label: '3박4일', value: '3박4일' },
-      { label: '4박5일', value: '4박5일' },
-      { label: '5박6일 이상', value: '5박6일 이상' }
-    ]
-  },
-  {
-    question: '인원 수는 몇 명인가요?',
-    options: [
-      { label: '1명', value: '1명' },
-      { label: '2명', value: '2명' },
-      { label: '3명', value: '3명' },
-      { label: '4명', value: '4명' },
-      { label: '5명 이상', value: '5명 이상' }
-    ]
-  },
-  {
-    question: '예산은?',
-    options: [
-      { label: '20만원 이하', value: '20만원 이하' },
-      { label: '20만원 ~ 50만원', value: '20만원~50만원' },
-      { label: '50만원 ~ 100만원', value: '50만원~100만원' },
-      { label: '100만원 ~ 200만원', value: '100만원~200만원' },
-      { label: '200만원 ~ 300만원', value: '200만원~300만원' },
-      { label: '300만원 이상', value: '300만원 이상' }
-    ]
-  },
-  {
-    question: '선호하는 여행 테마는?',
-    options: [
-      { label: '자연', value: 'NATURE' },
-      { label: '힐링', value: 'HEALING' },
-      { label: '액티비티', value: 'ACTIVITY' },
-      { label: '배낭여행', value: 'BACKPACK' },
-      { label: '럭셔리 여행', value: 'LUXURY' },
-      { label: '문화 탐방', value: 'CULTURE' },
-      { label: '사진 촬영', value: 'PHOTOGRAPHY' },
-      { label: '쇼핑', value: 'SHOPPING' }
-    ]
-  },
-  {
-    question: '선호하는 여행 스타일은?',
-    options: [
-      { label: '부지런히', value: 'DILIGENTLY' },
-      { label: '여유롭게', value: 'LEISURELY' }
-    ]
-  },
-  {
-    question: '여행 중 이동 수단은?',
-    options: [
-      { label: '걷기', value: 'WALKING' },
-      { label: '대중교통', value: 'PUBLIC' },
-      { label: '자전거', value: 'BICYCLE' },
-      { label: '렌트카', value: 'RENTAL' }
-    ]
-  },
-  {
-    question: '음식 중요도는?',
-    options: [
-      { label: '매우 중요', value: '5' },
-      { label: '중요', value: '4' },
-      { label: '보통', value: '3' },
-      { label: '그렇지 않음', value: '2' },
-      { label: '관심 없음', value: '1' }
-    ]
-  },
-  {
-    question: '숙소 유형은?',
-    options: [
-      { label: '호텔', value: 'HOTEL' },
-      { label: '게스트하우스', value: 'GUESTHOUSE' },
-      { label: '캠핑', value: 'CAMPING' },
-      { label: '에어비앤비', value: 'AIRBNB' },
-      { label: '상관없음', value: 'ANY' }
-    ]
-  },
-  {
-    question: '동행자는 누구인가요?',
-    options: [
-      { label: '친구', value: 'FRIENDS' },
-      { label: '가족', value: 'FAMILY' },
-      { label: '연인', value: 'COUPLE' },
-      { label: '혼자', value: 'ALONE' },
-      { label: '단체', value: 'GROUP' }
-    ]
-  }
-]);
-
+const questions = ref([]);
 const currentQuestionIndex = ref(0);
-const answers = ref(Array(questions.value.length).fill(null));
+const answers = ref([]);
 const surveyCompleted = ref(false);
 const result = ref(null);
 const isSubmitting = ref(false);
 
+onBeforeMount(async () => {
+    try {
+        const {data} = await api.get('/api/questions');
+        questions.value = data;
+        answers.value = Array(data.length).fill(null);
+      } catch (error) {
+        console.log('Error:', error);
+        alert('API 전송에 실패했습니다. 콘솔을 확인하세요.');
+      }
+});
+
 const progress = computed(() => {
+  if (questions.value.length === 0) {
+    return 0;
+  }
   if (surveyCompleted.value) {
     return 100;
   }
@@ -206,7 +121,7 @@ const progress = computed(() => {
   const totalProgress = (answeredQuestions / questions.value.length) * 100;
 
   if (isAnswered.value) {
-      return ((currentQuestionIndex.value + 1) / questions.value.length) * 100;
+    return ((currentQuestionIndex.value + 1) / questions.value.length) * 100;
   }
 
   return (currentQuestionIndex.value / questions.value.length) * 100;
