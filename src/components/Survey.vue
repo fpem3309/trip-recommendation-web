@@ -1,4 +1,9 @@
 <template>
+  <header>
+    <router-link to="/login">
+      <button>Login</button>
+    </router-link>
+  </header>
   <div class="survey-container">
     <h1 class="main-title">여행 스타일 테스트</h1>
 
@@ -445,5 +450,27 @@ pre {
 .day-plan {
   font-size: 1rem;
   color: #ddd;
+}
+
+header {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem;
+}
+
+header button {
+  padding: 10px 20px;
+  background-color: #ff8b80;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 700;
+  transition: background-color 0.3s;
+}
+
+header button:hover {
+  background-color: #e67a70;
 }
 </style>

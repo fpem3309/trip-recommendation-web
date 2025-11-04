@@ -25,4 +25,11 @@ api.interceptors.response.use((response) => {
   return response;
 });
 
+export const login = async (credentials) => {
+  const response = await api.post('/api/auth/login', credentials);
+  const token = response.data.token;
+  localStorage.setItem('token', token);
+  return token;
+};
+
 export default api;
