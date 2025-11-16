@@ -157,8 +157,6 @@ async function submitsurvey() {
   isSubmitting.value = true;
 
   const payload = {
-    userId: null,
-    guestToken: null,
     tripType: answers.value[0],
     period: answers.value[1],
     peopleCount: answers.value[2],
@@ -174,7 +172,6 @@ async function submitsurvey() {
   try {
     const response = await api.post('/api/survey', payload);
     console.log(response);
-    payload.guestToken = response.headers['x-guest-token'];
     result.value = response.data;
     // alert('성공적으로 제출되었습니다!'); // 결과 표시 후 alert 제거
   } catch (error) {
