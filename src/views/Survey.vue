@@ -3,6 +3,7 @@
     <router-link to="/login">
       <button>Login</button>
     </router-link>
+    <button @click="mypage">mypage</button>
   </header>
   <div class="survey-container">
     <h1 class="main-title">여행 스타일 테스트</h1>
@@ -182,6 +183,16 @@ async function submitsurvey() {
     isSubmitting.value = false;
   }
 }
+
+function mypage() {
+  try {
+    const response = api.get('/api/auth/me');
+    console.log(response);
+  } catch (error) {
+    console.log('Error:', error);
+  }
+}
+
 </script>
 
 <style scoped>
