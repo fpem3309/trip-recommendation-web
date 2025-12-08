@@ -3,6 +3,9 @@
     <router-link to="/login">
       <button>Login</button>
     </router-link>
+    <router-link to="/signup">
+      <button>Sign Up</button>
+    </router-link>
     <button @click="mypage">mypage</button>
   </header>
   <div class="survey-container">
@@ -464,6 +467,7 @@ header {
   display: flex;
   justify-content: flex-end;
   padding: 1rem;
+  gap: 1rem;
 }
 
 header button {
