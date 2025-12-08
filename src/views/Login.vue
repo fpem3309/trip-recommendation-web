@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <h2>Login</h2>
-    <form @submit.prevent="login" class="login-form">
+    <form @submit.prevent="performLogin" class="login-form">
       <div class="form-group">
         <label for="user-id">ID:</label>
         <input type="text" id="user-id" v-model="userId" />
@@ -15,26 +15,23 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { login } from '../api';
 
-export default {
-  data() {
-    return {
-      userId: '',
-      password: '',
-    };
-  },
-  methods: {
-    async login() {
-      try {
-        await login({ userId: this.userId, password: this.password });
-        this.$router.push('/');
-      } catch (error) {
-        console.error(error);
-      }
-    },
-  },
+const userId = ref('');
+const password = ref('');
+const router = useRouter();
+
+const performLogin = async () => {
+  try {
+    await login({ userId: userId.value, password: password.value });
+    window.dispatchEvent(new CustomEvent('login-success'));
+    router.push('/');
+  } catch (error) {
+    console.error(error);
+  }
 };
 </script>
 
@@ -108,3 +105,4 @@ h2 {
   background-color: #e67a70;
 }
 </style>
+

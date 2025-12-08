@@ -1,13 +1,4 @@
 <template>
-  <header>
-    <router-link to="/login">
-      <button>Login</button>
-    </router-link>
-    <router-link to="/signup">
-      <button>Sign Up</button>
-    </router-link>
-    <button @click="mypage">mypage</button>
-  </header>
   <div class="survey-container">
     <h1 class="main-title">여행 스타일 테스트</h1>
 
@@ -184,15 +175,6 @@ async function submitsurvey() {
   } finally {
     surveyCompleted.value = true;
     isSubmitting.value = false;
-  }
-}
-
-function mypage() {
-  try {
-    const response = api.get('/api/auth/me');
-    console.log(response);
-  } catch (error) {
-    console.log('Error:', error);
   }
 }
 
@@ -461,28 +443,5 @@ pre {
 .day-plan {
   font-size: 1rem;
   color: #ddd;
-}
-
-header {
-  display: flex;
-  justify-content: flex-end;
-  padding: 1rem;
-  gap: 1rem;
-}
-
-header button {
-  padding: 10px 20px;
-  background-color: #ff8b80;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 700;
-  transition: background-color 0.3s;
-}
-
-header button:hover {
-  background-color: #e67a70;
 }
 </style>
