@@ -2,7 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router';
 import Survey from './views/Survey.vue';
 import Login from './views/Login.vue';
 import SignUp from './views/SignUp.vue';
-import Admin from './views/admin/Admin.vue';
+import AdminLayout from './views/admin/layouts/AdminLayout.vue';
+import QuestionManagement from './views/admin/pages/QuestionManagement.vue';
+import UserManagement from './views/admin/pages/UserManagement.vue';
 
 const routes = [
   {
@@ -20,11 +22,26 @@ const routes = [
     name: 'SignUp',
     component: SignUp,
   },
-  {
+  { //TODO: 라우터 가드 필요
     path: '/admin',
-    name: 'Admin',
-    component: Admin,
-  }
+    component: AdminLayout,
+    children: [
+      {
+        path: '',
+        redirect: '/admin/questions',
+      },
+      {
+        path: 'questions',
+        name: 'AdminQuestions',
+        component: QuestionManagement,
+      },
+      {
+        path: 'users',
+        name: 'AdminUsers',
+        component: UserManagement,
+      }
+    ],
+  },
 ];
 
 const router = createRouter({
