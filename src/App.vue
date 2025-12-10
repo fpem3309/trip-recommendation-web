@@ -12,6 +12,7 @@
         <span v-else>
           <button @click="logout">Logout</button>
           <button @click="mypage">mypage</button>
+          <router-link id="btn-admin" v-if="getUserRole() === 'ROLE_ADMIN'" to="/admin">admin</router-link>
         </span>
       </div>
     </nav>
@@ -24,6 +25,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
+import { jwtDecode } from "jwt-decode";
 import api from './api';
 
 const isLoggedIn = ref(false);
@@ -47,6 +49,15 @@ const mypage = async () => {
     console.log('Error:', error);
   }
 };
+
+const getUserRole = () => {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+
+  const decoded = jwtDecode(token);
+  return decoded.role;
+}
+
 
 onMounted(() => {
   updateLoginStatus();
@@ -84,7 +95,7 @@ nav {
   margin-left: 1rem;
 }
 
-.nav-right button {
+.nav-right button, #btn-admin {
   background-color: #ff8b80;
   color: white;
   border: none;
