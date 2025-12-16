@@ -1,16 +1,16 @@
 <template>
   <div>
-    <!-- Edit Modal -->
-    <div v-if="isEditMode" class="modal-overlay">
+    <!-- Add/Edit Modal -->
+    <div v-if="isModalOpen" class="modal-overlay">
       <div class="modal-content">
-        <h2>질문 수정</h2>
-        <form @submit.prevent="updateQuestion" v-if="selectedQuestion">
+        <h2>{{ modalMode === 'edit' ? '질문 수정' : '질문 추가' }}</h2>
+        <form @submit.prevent="saveQuestion" v-if="selectedQuestion">
           <input type="hidden" name="order" id="order" v-model="selectedQuestion.order">
           <div class="form-group">
             <label for="question-text">질문:</label>
             <input type="text" id="question-text" v-model="selectedQuestion.question">
           </div>
-          
+
           <div class="form-group">
             <label>옵션:</label>
             <div v-for="(option, index) in selectedQuestion.options" :key="index" class="option-input">
@@ -23,7 +23,7 @@
 
           <div class="modal-actions">
             <button type="submit" class="save-btn">저장</button>
-            <button type="button" @click="closeEditMode" class="cancel-btn">취소</button>
+            <button type="button" @click="closeModal" class="cancel-btn">취소</button>
           </div>
         </form>
       </div>
@@ -31,7 +31,7 @@
 
     <div class="header">
       <h2>질문 관리</h2>
-      <button class="add-btn">새 질문 추가</button>
+      <button @click="openAddModal" class="add-btn">질문 추가</button>
     </div>
     <p>이곳에서 설문조사 질문을 추가, 수정, 삭제할 수 있습니다.</p>
 
@@ -53,7 +53,7 @@
               <div v-for="option in question.options" :key="option.value">{{ option.label }}</div>
             </td>
             <td class="actions">
-              <button @click="openEditMode(question)" class="edit-btn">수정</button>
+              <button @click="openEditModal(question)" class="edit-btn">수정</button>
               <button @click="deleteQuestion(question.id)" class="delete-btn">삭제</button>
             </td>
           </tr>
@@ -68,7 +68,8 @@ import { ref, onBeforeMount } from 'vue';
 import api from '../../../api';
 
 const questions = ref([]);
-const isEditMode = ref(false);
+const isModalOpen = ref(false);
+const modalMode = ref('add'); // 'add' or 'edit'
 const selectedQuestion = ref(null);
 
 onBeforeMount(async () => {
@@ -80,13 +81,24 @@ onBeforeMount(async () => {
   }
 });
 
-const openEditMode = (question) => {
-  isEditMode.value = true;
-  selectedQuestion.value = JSON.parse(JSON.stringify(question));
+const openAddModal = () => {
+  modalMode.value = 'add';
+  selectedQuestion.value = {
+    question: '',
+    options: [{ label: '', value: '' }],
+    order: questions.value.length + 1
+  };
+  isModalOpen.value = true;
 };
 
-const closeEditMode = () => {
-  isEditMode.value = false;
+const openEditModal = (question) => {
+  modalMode.value = 'edit';
+  selectedQuestion.value = JSON.parse(JSON.stringify(question)); // Deep copy
+  isModalOpen.value = true;
+};
+
+const closeModal = () => {
+  isModalOpen.value = false;
   selectedQuestion.value = null;
 };
 
@@ -102,22 +114,30 @@ const removeOption = (index) => {
   }
 };
 
-const updateQuestion = async () => {
+const saveQuestion = async () => {
   if (!selectedQuestion.value) return;
+  selectedQuestion.value.options = selectedQuestion.value.options.filter(
+    opt => opt.label.trim() !== '' && opt.value.trim() !== ''
+  );
   try {
-    // Filter out empty options before sending to the server
-    selectedQuestion.value.options = selectedQuestion.value.options.filter(opt => opt.label.trim() !== '');
-
-    await api.put(`/api/questions/${selectedQuestion.value.id}`, selectedQuestion.value);
-    const index = questions.value.findIndex(q => q.id === selectedQuestion.value.id);
-    if (index !== -1) {
-      questions.value[index] = selectedQuestion.value;
+    if (modalMode.value === 'edit') {
+      // UPDATE
+      await api.put(`/api/questions/${selectedQuestion.value.id}`, selectedQuestion.value);
+      const index = questions.value.findIndex(q => q.id === selectedQuestion.value.id);
+      if (index !== -1) questions.value[index] = selectedQuestion.value;
+    } else {
+      // INSERT
+      await api.post('/api/questions', selectedQuestion.value);
+      questions.value.push(selectedQuestion.value);
     }
-    closeEditMode();
   } catch (error) {
-    console.error('Error updating question:', error);
+    console.error('Error saving question:', error);
+    // Optionally, show an error message to the user
+  } finally {
+    closeModal();
   }
 };
+
 
 const deleteQuestion = (id) => {
   let confirmed = confirm('정말로 이 질문을 삭제하시겠습니까?');
@@ -288,28 +308,28 @@ p {
 }
 
 .remove-option-btn {
-    background-color: #e74c3c;
-    color: white;
-    border: none;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: bold;
-    line-height: 1;
-    padding: 0;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  line-height: 1;
+  padding: 0;
 }
 
 .add-option-btn {
-    background-color: #2ecc71;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    margin-top: 10px;
+  background-color: #2ecc71;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-top: 10px;
 }
 
 .modal-actions {
@@ -333,6 +353,7 @@ p {
   background-color: #3498db;
   color: white;
 }
+
 .save-btn:hover {
   background-color: #2980b9;
 }
@@ -342,6 +363,7 @@ p {
   color: #333;
   border: 1px solid #ccc;
 }
+
 .cancel-btn:hover {
   background-color: #e5e5e5;
 }
