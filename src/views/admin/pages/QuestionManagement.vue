@@ -14,8 +14,11 @@
           <div class="form-group">
             <label>옵션:</label>
             <div v-for="(option, index) in selectedQuestion.options" :key="index" class="option-input">
-              <input type="text" v-model="option.label">
+              <input type="text" v-model="option.label" placeholder="라벨">
+              <input type="text" v-model="option.value" placeholder="값">
+              <button type="button" @click="removeOption(index)" class="remove-option-btn">-</button>
             </div>
+            <button type="button" @click="addOption" class="add-option-btn">옵션 추가</button>
           </div>
 
           <div class="modal-actions">
@@ -36,6 +39,7 @@
       <table>
         <thead>
           <tr>
+            <th>순서</th>
             <th>질문</th>
             <th>옵션</th>
             <th>관리</th>
@@ -43,6 +47,7 @@
         </thead>
         <tbody>
           <tr v-for="question in questions" :key="question.id">
+            <td>{{ question.order }}</td>
             <td>{{ question.question }}</td>
             <td>
               <div v-for="option in question.options" :key="option.value">{{ option.label }}</div>
@@ -69,7 +74,6 @@ const selectedQuestion = ref(null);
 onBeforeMount(async () => {
   try {
     const { data } = await api.get('/api/questions');
-    console.log(data);
     questions.value = data;
   } catch (error) {
     console.error('Error fetching questions:', error);
@@ -86,9 +90,24 @@ const closeEditMode = () => {
   selectedQuestion.value = null;
 };
 
+const addOption = () => {
+  if (selectedQuestion.value) {
+    selectedQuestion.value.options.push({ label: '', value: '' });
+  }
+};
+
+const removeOption = (index) => {
+  if (selectedQuestion.value) {
+    selectedQuestion.value.options.splice(index, 1);
+  }
+};
+
 const updateQuestion = async () => {
   if (!selectedQuestion.value) return;
   try {
+    // Filter out empty options before sending to the server
+    selectedQuestion.value.options = selectedQuestion.value.options.filter(opt => opt.label.trim() !== '');
+
     await api.put(`/api/questions/${selectedQuestion.value.id}`, selectedQuestion.value);
     const index = questions.value.findIndex(q => q.id === selectedQuestion.value.id);
     if (index !== -1) {
@@ -261,10 +280,36 @@ p {
   display: flex;
   align-items: center;
   margin-bottom: 8px;
+  gap: 10px;
 }
 
 .option-input input {
   flex: 1;
+}
+
+.remove-option-btn {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    line-height: 1;
+    padding: 0;
+}
+
+.add-option-btn {
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-top: 10px;
 }
 
 .modal-actions {
