@@ -45,19 +45,24 @@
             <th>관리</th>
           </tr>
         </thead>
-        <tbody>
-          <tr v-for="question in questions" :key="question.id">
-            <td>{{ question.order }}</td>
-            <td>{{ question.question }}</td>
-            <td>
-              <div v-for="option in question.options" :key="option.value">{{ option.label }}</div>
-            </td>
-            <td class="actions">
-              <button @click="openEditModal(question)" class="edit-btn">수정</button>
-              <button @click="deleteQuestion(question.id)" class="delete-btn">삭제</button>
-            </td>
-          </tr>
-        </tbody>
+        <draggable v-model="questions" tag="tbody" item-key="id" handle=".drag-handle" @end="onDragEnd">
+          <template #item="{ element: question, index }">
+            <tr>
+              <td class="drag-cell">
+                <span class="drag-handle">☰</span>
+                {{ index + 1 }}
+              </td>
+              <td>{{ question.question }}</td>
+              <td>
+                <div v-for="option in question.options" :key="option.value">{{ option.label }}</div>
+              </td>
+              <td class="actions">
+                <button @click="openEditModal(question)" class="edit-btn">수정</button>
+                <button @click="deleteQuestion(question.id)" class="delete-btn">삭제</button>
+              </td>
+            </tr>
+          </template>
+        </draggable>
       </table>
     </div>
   </div>
@@ -65,6 +70,7 @@
 
 <script setup>
 import { ref, onBeforeMount } from 'vue';
+import draggable from 'vuedraggable';
 import api from '../../../api';
 
 const questions = ref([]);
@@ -80,6 +86,19 @@ onBeforeMount(async () => {
     console.error('Error fetching questions:', error);
   }
 });
+
+const onDragEnd = async () => {
+
+  const orderedQuestions = questions.value.map((question, index) => {
+    return { id: question.id, order: index };
+  });
+
+  try {
+    await api.patch('/api/questions/order', { questions: orderedQuestions });
+  } catch (error) {
+    console.error('Error updating question order:', error);
+  }
+};
 
 const openAddModal = () => {
   modalMode.value = 'add';
@@ -132,12 +151,10 @@ const saveQuestion = async () => {
     }
   } catch (error) {
     console.error('Error saving question:', error);
-    // Optionally, show an error message to the user
   } finally {
     closeModal();
   }
 };
-
 
 const deleteQuestion = (id) => {
   let confirmed = confirm('정말로 이 질문을 삭제하시겠습니까?');
@@ -154,6 +171,18 @@ const deleteQuestion = (id) => {
 </script>
 
 <style scoped>
+.drag-handle {
+  cursor: move;
+  margin-right: 15px;
+  font-size: 1.2rem;
+  color: #777;
+}
+
+.drag-cell {
+  display: flex;
+  align-items: center;
+}
+
 div {
   color: black;
 }
@@ -202,6 +231,7 @@ p {
 .question-list td {
   padding: 12px 15px;
   border-bottom: 1px solid #ddd;
+  vertical-align: middle;
 }
 
 .question-list thead {
@@ -215,6 +245,11 @@ p {
 
 .question-list tbody tr:hover {
   background-color: #f9f9f9;
+}
+
+.question-list tbody tr.sortable-ghost {
+  opacity: 0.5;
+  background: #c8ebfb;
 }
 
 .actions button {
