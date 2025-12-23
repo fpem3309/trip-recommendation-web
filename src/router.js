@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { jwtDecode } from 'jwt-decode';
 import Survey from './views/Survey.vue';
 import Login from './views/Login.vue';
 import SignUp from './views/SignUp.vue';
@@ -22,9 +23,29 @@ const routes = [
     name: 'SignUp',
     component: SignUp,
   },
-  { //TODO: 라우터 가드 필요
+  {
     path: '/admin',
     component: AdminLayout,
+    beforeEnter: (to, from, next) => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        return next('/login');
+      }
+
+      // 토큰이 있을때 검증
+      try {
+        const { role } = jwtDecode(token);
+        if (role && role.includes('ROLE_ADMIN')) {
+          next();
+        } else {
+          alert('접근 권한이 없습니다.');
+          next('/');
+        }
+      } catch (error) {
+        console.error('Invalid token:', error);
+        next('/login');
+      }
+    },
     children: [
       {
         path: '',
