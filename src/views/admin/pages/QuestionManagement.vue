@@ -77,10 +77,11 @@ const questions = ref([]);
 const isModalOpen = ref(false);
 const modalMode = ref('add'); // 'add' or 'edit'
 const selectedQuestion = ref(null);
+const adminQuestionApi = '/api/admin/questions';
 
 onBeforeMount(async () => {
   try {
-    const { data } = await api.get('/api/questions');
+    const { data } = await api.get(`${adminQuestionApi}`);
     questions.value = data;
   } catch (error) {
     console.error('Error fetching questions:', error);
@@ -94,7 +95,7 @@ const onDragEnd = async () => {
   });
 
   try {
-    await api.patch('/api/questions/order', { questions: orderedQuestions });
+    await api.patch(`${adminQuestionApi}/order`, { questions: orderedQuestions });
   } catch (error) {
     console.error('Error updating question order:', error);
   }
@@ -141,12 +142,12 @@ const saveQuestion = async () => {
   try {
     if (modalMode.value === 'edit') {
       // UPDATE
-      await api.put(`/api/questions/${selectedQuestion.value.id}`, selectedQuestion.value);
+      await api.put(`${adminQuestionApi}/${selectedQuestion.value.id}`, selectedQuestion.value);
       const index = questions.value.findIndex(q => q.id === selectedQuestion.value.id);
       if (index !== -1) questions.value[index] = selectedQuestion.value;
     } else {
       // INSERT
-      await api.post('/api/questions', selectedQuestion.value);
+      await api.post(`${adminQuestionApi}`, selectedQuestion.value);
       questions.value.push(selectedQuestion.value);
     }
   } catch (error) {
@@ -159,7 +160,7 @@ const saveQuestion = async () => {
 const deleteQuestion = (id) => {
   let confirmed = confirm('정말로 이 질문을 삭제하시겠습니까?');
   if (confirmed) {
-    api.delete(`/api/questions/${id}`)
+    api.delete(`${adminQuestionApi}/${id}`)
       .then(() => {
         questions.value = questions.value.filter(q => q.id !== id);
       })

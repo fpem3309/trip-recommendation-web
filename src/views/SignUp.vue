@@ -33,7 +33,7 @@ export default {
       email: '',
       nickname: '',
       password: '',
-      role: 'ROLE_USER',
+      role: ['ROLE_USER'],
       oauthProvider: null,
     };
   },
