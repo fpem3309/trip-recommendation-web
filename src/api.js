@@ -42,8 +42,6 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    console.log("Response error:", error.response);
-
     // 401 에러이고, 재시도한 요청이 아닐 경우
     if (error.response.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {

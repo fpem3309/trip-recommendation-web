@@ -19,6 +19,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { login } from '../api';
+import swal from 'sweetalert2';
 
 const userId = ref('');
 const password = ref('');
@@ -30,7 +31,12 @@ const performLogin = async () => {
     window.dispatchEvent(new CustomEvent('login-success'));
     router.push('/');
   } catch (error) {
-    console.error(error);
+    console.log(error);
+    swal.fire({
+      icon: 'error',
+      title: '로그인 실패',
+      text: error.response.data.message
+    });
   }
 };
 </script>

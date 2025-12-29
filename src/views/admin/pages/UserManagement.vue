@@ -63,6 +63,7 @@
 <script setup>
 import { ref, onBeforeMount } from 'vue';
 import api from '../../../api';
+import swal from 'sweetalert2';
 
 const users = ref([]);
 const isModalOpen = ref(false);
@@ -116,16 +117,38 @@ const saveUser = async () => {
 };
 
 const deleteUser = (userId) => {
-  let confirmed = confirm('정말로 이 회원을 삭제하시겠습니까?');
-  if (confirmed) {
-    api.delete(`${adminUserApi}/${userId}`)
-      .then(() => {
-        users.value = users.value.filter(u => u.userId !== userId);
-      })
-      .catch(error => {
-        console.error('Error deleting user:', error);
-      });
-  }
+  swal.fire({
+    title: '정말로 이 회원을 삭제하시겠습니까?',
+    text: "이 작업은 되돌릴 수 없습니다!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: '삭제',
+    cancelButtonText: '취소'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      api.delete(`${adminUserApi}/${userId}`)
+        .then(() => {
+          users.value = users.value.filter(u => u.userId !== userId);
+          swal.fire(
+            '삭제됨!',
+            '회원이 삭제되었습니다.',
+            'success'
+          )
+        })
+        .catch(error => {
+          console.error('Error deleting user:', error);
+          if (error.response.data && error.response.data.message) {
+            swal.fire({
+              icon: 'error',
+              title: '회원 삭제 실패',
+              text: error.response.data.message
+            });
+          }
+        });
+    }
+  });
 };
 </script>
 
