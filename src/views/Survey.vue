@@ -18,19 +18,10 @@
     <div class="question-container" v-if="!surveyCompleted">
       <h3 class="question-title">{{ questions[currentQuestionIndex]?.question }}</h3>
       <div class="options-container">
-        <label
-          v-for="(option, index) in questions[currentQuestionIndex]?.options"
-          :key="index"
-          class="option"
-          :class="{ selected: answers[currentQuestionIndex] === option.value }"
-        >
-          <input
-            type="radio"
-            :name="'question-' + currentQuestionIndex"
-            :value="option.value"
-            v-model="answers[currentQuestionIndex]"
-            class="hidden-radio"
-          />
+        <label v-for="(option, index) in questions[currentQuestionIndex]?.options" :key="index" class="option"
+          :class="{ selected: answers[currentQuestionIndex] === option.value }">
+          <input type="radio" :name="'question-' + currentQuestionIndex" :value="option.value"
+            v-model="answers[currentQuestionIndex]" class="hidden-radio" />
           <span>{{ option.label }}</span>
         </label>
       </div>
@@ -69,8 +60,8 @@
       </div>
     </div>
     <div v-else-if="surveyCompleted" class="result-container">
-        <h4>제출 완료!</h4>
-        <p>결과를 받아오는 중입니다...</p>
+      <h4>제출 완료!</h4>
+      <p>결과를 받아오는 중입니다...</p>
     </div>
 
     <!-- Navigation -->
@@ -81,7 +72,8 @@
       <button @click="nextQuestion" v-if="currentQuestionIndex < questions.length - 1" :disabled="!isAnswered">
         다음
       </button>
-      <button @click="submitsurvey" v-if="currentQuestionIndex === questions.length - 1 && !surveyCompleted" :disabled="!isAnswered || isSubmitting">
+      <button @click="submitsurvey" v-if="currentQuestionIndex === questions.length - 1 && !surveyCompleted"
+        :disabled="!isAnswered || isSubmitting">
         제출
       </button>
     </div>
@@ -91,6 +83,7 @@
 <script setup>
 import { ref, computed, onBeforeMount, } from 'vue';
 import api from '../api';
+import Swal from 'sweetalert2';
 
 const questions = ref([]);
 const currentQuestionIndex = ref(0);
@@ -100,14 +93,14 @@ const result = ref(null);
 const isSubmitting = ref(false);
 
 onBeforeMount(async () => {
-    try {
-        const {data} = await api.get('/api/questions');
-        questions.value = data;
-        answers.value = Array(data.length).fill(null);
-      } catch (error) {
-        console.log('Error:', error);
-        alert('API 전송에 실패했습니다. 콘솔을 확인하세요.');
-      }
+  try {
+    const { data } = await api.get('/api/questions');
+    questions.value = data;
+    answers.value = Array(data.length).fill(null);
+  } catch (error) {
+    console.log('Error:', error);
+    alert('API 전송에 실패했습니다. 콘솔을 확인하세요.');
+  }
 });
 
 const progress = computed(() => {
@@ -128,7 +121,7 @@ const progress = computed(() => {
 });
 
 const isAnswered = computed(() => {
-    return answers.value[currentQuestionIndex.value] !== null;
+  return answers.value[currentQuestionIndex.value] !== null;
 });
 
 function nextQuestion() {
@@ -144,7 +137,7 @@ function prevQuestion() {
 }
 
 async function submitsurvey() {
-  if(!isAnswered.value) {
+  if (!isAnswered.value) {
     alert('현재 문제에 답변해주세요.');
     return;
   }
@@ -152,26 +145,30 @@ async function submitsurvey() {
   isSubmitting.value = true;
 
   const payload = {
-    tripType: answers.value[0],
-    period: answers.value[1],
-    peopleCount: answers.value[2],
-    budget: answers.value[3],
-    preferenceType: answers.value[4],
-    tripStyle: answers.value[5],
-    transportation: answers.value[6],
-    foodImportance: answers.value[7],
-    accommodation: answers.value[8],
-    companion: answers.value[9],
+    surveyAnswers: [
+      { questionId: questions.value[0].questionId, answer: answers.value[0] },
+      { questionId: questions.value[1].questionId, answer: answers.value[1] },
+      { questionId: questions.value[2].questionId, answer: answers.value[2] },
+      { questionId: questions.value[3].questionId, answer: answers.value[3] },
+      { questionId: questions.value[4].questionId, answer: answers.value[4] },
+      { questionId: questions.value[5].questionId, answer: answers.value[5] },
+      { questionId: questions.value[6].questionId, answer: answers.value[6] },
+      { questionId: questions.value[7].questionId, answer: answers.value[7] },
+      { questionId: questions.value[8].questionId, answer: answers.value[8] },
+      { questionId: questions.value[9].questionId, answer: answers.value[9] }
+    ]
   };
 
   try {
     const response = await api.post('/api/survey', payload);
-    console.log(response);
     result.value = response.data;
-    // alert('성공적으로 제출되었습니다!'); // 결과 표시 후 alert 제거
   } catch (error) {
     console.log('Error submitting survey:', error);
-    alert('API 전송에 실패했습니다. 콘솔을 확인하세요.');
+    Swal.fire({
+      icon: 'error',
+      title: '제출 실패',
+      text: error.response.data.message
+    });
   } finally {
     surveyCompleted.value = true;
     isSubmitting.value = false;
@@ -308,12 +305,13 @@ async function submitsurvey() {
 }
 
 .result-container h4 {
-    font-size: 2rem;
-    color: #ff8b80;
+  font-size: 2rem;
+  color: #ff8b80;
 }
 
 pre {
-  display: none; /* 결과가 오면 새 UI로 보여주므로 기존 pre는 숨김 */
+  display: none;
+  /* 결과가 오면 새 UI로 보여주므로 기존 pre는 숨김 */
 }
 
 .loading-overlay {
@@ -341,8 +339,13 @@ pre {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .result-display {
@@ -429,7 +432,7 @@ pre {
 }
 
 .itinerary-item:hover {
-    background-color: #3a3a3a;
+  background-color: #3a3a3a;
 }
 
 .day-number {
