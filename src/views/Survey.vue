@@ -145,18 +145,10 @@ async function submitsurvey() {
   isSubmitting.value = true;
 
   const payload = {
-    surveyAnswers: [
-      { questionId: questions.value[0].questionId, answer: answers.value[0] },
-      { questionId: questions.value[1].questionId, answer: answers.value[1] },
-      { questionId: questions.value[2].questionId, answer: answers.value[2] },
-      { questionId: questions.value[3].questionId, answer: answers.value[3] },
-      { questionId: questions.value[4].questionId, answer: answers.value[4] },
-      { questionId: questions.value[5].questionId, answer: answers.value[5] },
-      { questionId: questions.value[6].questionId, answer: answers.value[6] },
-      { questionId: questions.value[7].questionId, answer: answers.value[7] },
-      { questionId: questions.value[8].questionId, answer: answers.value[8] },
-      { questionId: questions.value[9].questionId, answer: answers.value[9] }
-    ]
+    surveyAnswers: questions.value.map((question, index) => ({
+      questionId: question.questionId,
+      answer: answers.value[index]
+    }))
   };
 
   try {
