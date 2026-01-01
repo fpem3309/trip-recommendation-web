@@ -99,7 +99,11 @@ onBeforeMount(async () => {
     answers.value = Array(data.length).fill(null);
   } catch (error) {
     console.log('Error:', error);
-    alert('API 전송에 실패했습니다. 콘솔을 확인하세요.');
+    Swal.fire({
+      icon: 'error',
+      title: '질문을 받아오지 못했습니다.',
+      text: error.response.data.message
+    });
   }
 });
 
