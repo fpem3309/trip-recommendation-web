@@ -51,6 +51,31 @@
 
       <div class="itinerary-section">
         <h3>상세 일정</h3>
+        <div class="itinerary-map">
+          <div class="map-slider">
+            <button @click="prevMap" :disabled="currentMapDayIndex === 0" class="slider-nav prev">&lt;</button>
+            <div class="map-container">
+              <iframe
+                v-if="mapUrls[currentMapDayIndex]"
+                :key="currentMapDayIndex"
+                width="100%"
+                height="500"
+                style="border:0"
+                loading="lazy"
+                allowfullscreen
+                referrerpolicy="no-referrer-when-downgrade"
+                :src="mapUrls[currentMapDayIndex]">
+              </iframe>
+              <div v-else class="no-map-data">
+                지도 데이터가 없습니다.
+              </div>
+              <div class="map-day-indicator">
+                {{ currentMapDayIndex + 1 }}일차
+              </div>
+            </div>
+            <button @click="nextMap" :disabled="currentMapDayIndex >= mapUrls.length - 1" class="slider-nav next">&gt;</button>
+          </div>
+        </div>
         <ul class="itinerary-list">
           <li v-for="item in result.itinerary" :key="item.dayNumber" class="itinerary-item">
             <div class="day-number">Day {{ item.dayNumber }}</div>
@@ -91,6 +116,8 @@ const answers = ref([]);
 const surveyCompleted = ref(false);
 const result = ref(null);
 const isSubmitting = ref(false);
+const currentMapDayIndex = ref(0);
+const mapUrls = ref([]);
 
 onBeforeMount(async () => {
   try {
@@ -151,13 +178,14 @@ async function submitsurvey() {
   const payload = {
     surveyAnswers: questions.value.map((question, index) => ({
       questionId: question.questionId,
-      answer: answers.value[index]
+      answer: question.question + ": " + answers.value[index]
     }))
   };
 
   try {
     const response = await api.post('/api/survey', payload);
     result.value = response.data;
+    generateMapUrls();
   } catch (error) {
     console.log('Error submitting survey:', error);
     Swal.fire({
@@ -170,6 +198,45 @@ async function submitsurvey() {
     isSubmitting.value = false;
   }
 }
+
+const generateMapUrl = (places) => {
+  if (!places || places.length === 0) {
+    return '';
+  }
+  if (places.length === 1) {
+    return `https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(places[0])}`;
+  }
+
+  const origin = encodeURIComponent(places[0]);
+  const destination = encodeURIComponent(places[places.length - 1]);
+  const waypoints = places.slice(1, -1).map(p => encodeURIComponent(p)).join('|');
+  const allowedModes = ['walking', 'transit', 'bicycling', 'driving'];
+  let modeParam = '';
+  if(result.value && result.value.transportation) {
+    modeParam = allowedModes.includes(result.value.transportation) 
+               ? `&mode=${result.value.transportation}`
+               : '&mode=driving'
+  }
+  return `https://www.google.com/maps/embed/v1/directions?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&origin=${origin}&destination=${destination}&waypoints=${waypoints}${modeParam}`;
+};
+
+const generateMapUrls = () => {
+  if (result.value && result.value.googleMapPlaces) {
+    mapUrls.value = result.value.googleMapPlaces.map(dailyPlaces => generateMapUrl(dailyPlaces.places));
+  }
+};
+
+const nextMap = () => {
+  if (currentMapDayIndex.value < mapUrls.value.length - 1) {
+    currentMapDayIndex.value++;
+  }
+};
+
+const prevMap = () => {
+  if (currentMapDayIndex.value > 0) {
+    currentMapDayIndex.value--;
+  }
+};
 
 </script>
 
@@ -442,5 +509,69 @@ pre {
 .day-plan {
   font-size: 1rem;
   color: #ddd;
+}
+
+.map-slider {
+  position: relative;
+}
+
+.map-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.slider-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.slider-nav:disabled {
+  background-color: rgba(0, 0, 0, 0.2);
+  cursor: not-allowed;
+}
+
+.slider-nav.prev {
+  left: 10px;
+}
+
+.slider-nav.next {
+  right: 10px;
+}
+
+.no-map-data {
+  width: 100%;
+  height: 450px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #2a2a2a;
+  color: #aaa;
+  font-size: 1.2rem;
+}
+
+.map-day-indicator {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 1rem;
+  font-weight: bold;
 }
 </style>
