@@ -209,7 +209,7 @@ const generateMapUrl = (places) => {
 
   const origin = encodeURIComponent(places[0]);
   const destination = encodeURIComponent(places[places.length - 1]);
-  const waypoints = places.slice(1, -1).map(p => encodeURIComponent(p)).join('|');
+  let waypoints = places.slice(1, -1).map(p => encodeURIComponent(p)).join('|');
   const allowedModes = ['walking', 'transit', 'bicycling', 'driving'];
   let modeParam = '';
   if(result.value && result.value.transportation) {
@@ -217,7 +217,12 @@ const generateMapUrl = (places) => {
                ? `&mode=${result.value.transportation}`
                : '&mode=driving'
   }
-  return `https://www.google.com/maps/embed/v1/directions?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&origin=${origin}&destination=${destination}&waypoints=${waypoints}${modeParam}`;
+  if(waypoints.length > 0) {
+    waypoints = `&waypoints=${waypoints}`;
+  } else {
+    waypoints = '';
+  }
+  return `https://www.google.com/maps/embed/v1/directions?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&origin=${origin}&destination=${destination}${waypoints}${modeParam}`;
 };
 
 const generateMapUrls = () => {
