@@ -7,6 +7,9 @@ import AdminLayout from './views/admin/layouts/AdminLayout.vue';
 import QuestionManagement from './views/admin/pages/QuestionManagement.vue';
 import UserManagement from './views/admin/pages/UserManagement.vue';
 
+import MyPageLayout from './views/mypage/layouts/MyPageLayout.vue';
+import MySurvey from './views/mypage/pages/MySurvey.vue';
+
 const routes = [
   {
     path: '/',
@@ -22,6 +25,28 @@ const routes = [
     path: '/signup',
     name: 'SignUp',
     component: SignUp,
+  },
+  {
+    path: '/mypage',
+    component: MyPageLayout,
+    beforeEnter: (to, from, next) => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        return next('/login');
+      }
+      next();
+    },
+    children: [
+      {
+        path: '',
+        redirect: '/mypage/surveys',
+      },
+      {
+        path: 'surveys',
+        name: 'MySurveys',
+        component: MySurvey,
+      },
+    ],
   },
   {
     path: '/admin',
