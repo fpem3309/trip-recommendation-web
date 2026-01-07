@@ -4,13 +4,13 @@
     <div v-if="loading" class="loading">Loading...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
     <div v-else class="survey-list">
-      <div v-for="survey in surveys" :key="survey.id" class="survey-card">
+      <div v-for="survey in surveys" :key="survey.id" class="survey-card" @click="goToDetail(survey.id)">
         <div class="survey-header">
           <h3>{{ survey.city }}, {{ survey.country }}</h3>
         </div>
         <div class="survey-body">
           <p><strong>예산:</strong> {{ survey.estimatedBudget }}</p>
-          <p><strong>기간:</strong> {{ survey.period }}일</p>
+          <p><strong>기간:</strong> {{ survey.period }}박 {{ parseInt(survey.period) + 1 }}일</p>
           <p><strong>교통수단:</strong> {{ survey.transportation }}</p>
           <p><strong>추천:</strong> {{ survey.recommendation }}</p>
         </div>
@@ -21,16 +21,17 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import api from '../../../api';
 
 const surveys = ref([]);
 const loading = ref(true);
 const error = ref(null);
+const router = useRouter();
 
 onMounted(async () => {
   try {
     const { data } = await api.get('/api/auth/survey');
-    console.log(data);
     surveys.value = data;
   } catch (err) {
     error.value = '설문 목록을 가져오는 데 실패했습니다.';
@@ -39,6 +40,16 @@ onMounted(async () => {
     loading.value = false;
   }
 });
+
+const goToDetail = (id) => {
+  if (id) {
+    router.push(`/mypage/surveys/${id}`);
+  } else {
+    // Mock data doesn't have a real ID, so we use a placeholder for navigation
+    // In a real scenario, every survey item should have a unique ID.
+    router.push(`/mypage/surveys/test-id`);
+  }
+};
 </script>
 
 <style scoped>
@@ -77,6 +88,7 @@ h1 {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .survey-card:hover {

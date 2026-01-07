@@ -109,6 +109,7 @@
 import { ref, computed, onBeforeMount, } from 'vue';
 import api from '../api';
 import Swal from 'sweetalert2';
+import { generateMapUrls } from '../map';
 
 const questions = ref([]);
 const currentQuestionIndex = ref(0);
@@ -185,7 +186,7 @@ async function submitsurvey() {
   try {
     const response = await api.post('/api/survey', payload);
     result.value = response.data;
-    generateMapUrls();
+    mapUrls.value = generateMapUrls(result.value.googleMapPlaces, result.value);
   } catch (error) {
     console.log('Error submitting survey:', error);
     Swal.fire({
@@ -198,38 +199,6 @@ async function submitsurvey() {
     isSubmitting.value = false;
   }
 }
-
-const generateMapUrl = (places) => {
-  if (!places || places.length === 0) {
-    return '';
-  }
-  if (places.length === 1) {
-    return `https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&q=${encodeURIComponent(places[0])}`;
-  }
-
-  const origin = encodeURIComponent(places[0]);
-  const destination = encodeURIComponent(places[places.length - 1]);
-  let waypoints = places.slice(1, -1).map(p => encodeURIComponent(p)).join('|');
-  const allowedModes = ['walking', 'transit', 'bicycling', 'driving'];
-  let modeParam = '';
-  if(result.value && result.value.transportation) {
-    modeParam = allowedModes.includes(result.value.transportation) 
-               ? `&mode=${result.value.transportation}`
-               : '&mode=driving'
-  }
-  if(waypoints.length > 0) {
-    waypoints = `&waypoints=${waypoints}`;
-  } else {
-    waypoints = '';
-  }
-  return `https://www.google.com/maps/embed/v1/directions?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&origin=${origin}&destination=${destination}${waypoints}${modeParam}`;
-};
-
-const generateMapUrls = () => {
-  if (result.value && result.value.googleMapPlaces) {
-    mapUrls.value = result.value.googleMapPlaces.map(dailyPlaces => generateMapUrl(dailyPlaces.places));
-  }
-};
 
 const nextMap = () => {
   if (currentMapDayIndex.value < mapUrls.value.length - 1) {

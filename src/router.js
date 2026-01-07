@@ -46,6 +46,11 @@ const routes = [
         name: 'MySurveys',
         component: MySurvey,
       },
+      {
+        path: 'surveys/:id',
+        name: 'MySurveyDetail',
+        component: () => import('./views/mypage/pages/SurveyDetail.vue'),
+      },
     ],
   },
   {
