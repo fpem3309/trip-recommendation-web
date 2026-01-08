@@ -5,6 +5,7 @@ import Login from './views/Login.vue';
 import SignUp from './views/SignUp.vue';
 import AdminLayout from './views/admin/layouts/AdminLayout.vue';
 import QuestionManagement from './views/admin/pages/QuestionManagement.vue';
+import PromptManagement from './views/admin/pages/PromptManagement.vue';
 import UserManagement from './views/admin/pages/UserManagement.vue';
 
 import MyPageLayout from './views/mypage/layouts/MyPageLayout.vue';
@@ -85,6 +86,11 @@ const routes = [
         path: 'questions',
         name: 'AdminQuestions',
         component: QuestionManagement,
+      },
+      {
+        path: 'prompts',
+        name: 'AdminPrompts',
+        component: PromptManagement,
       },
       {
         path: 'users',

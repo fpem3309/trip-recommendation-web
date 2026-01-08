@@ -6,9 +6,9 @@
         <ul>
           <li>
             <router-link to="/admin/questions">질문 관리</router-link>
+            <router-link to="/admin/prompts">프롬프트 관리</router-link>
             <router-link to="/admin/users">회원 관리</router-link>
           </li>
-          <!-- 다른 메뉴 항목들을 여기에 추가할 수 있습니다. -->
         </ul>
       </nav>
     </aside>
