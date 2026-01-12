@@ -4,7 +4,7 @@
     <div v-if="loading" class="loading">Loading...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
     <div v-else class="survey-list">
-      <div v-for="survey in surveys" :key="survey.id" class="survey-card" @click="goToDetail(survey.id)">
+      <div v-for="survey in surveys" :key="survey.id" class="survey-card" @click="goToDetail(survey.surveyId)">
         <div class="survey-header">
           <h3>{{ survey.city }}, {{ survey.country }}</h3>
         </div>
