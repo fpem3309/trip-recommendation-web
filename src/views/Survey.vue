@@ -91,16 +91,23 @@
 
     <!-- Navigation -->
     <div class="navigation-buttons">
-      <button @click="prevQuestion" :disabled="currentQuestionIndex === 0 || surveyCompleted">
-        이전
-      </button>
-      <button @click="nextQuestion" v-if="currentQuestionIndex < questions.length - 1" :disabled="!isAnswered">
-        다음
-      </button>
-      <button @click="submitsurvey" v-if="currentQuestionIndex === questions.length - 1 && !surveyCompleted"
-        :disabled="!isAnswered || isSubmitting">
-        제출
-      </button>
+      <template v-if="!surveyCompleted">
+        <button @click="prevQuestion" :disabled="currentQuestionIndex === 0">
+          이전
+        </button>
+        <button @click="nextQuestion" v-if="currentQuestionIndex < questions.length - 1" :disabled="!isAnswered">
+          다음
+        </button>
+        <button @click="submitsurvey" v-if="currentQuestionIndex === questions.length - 1"
+          :disabled="!isAnswered || isSubmitting">
+          제출
+        </button>
+      </template>
+      <template v-else>
+        <button @click="retrySurvey">
+          다시하기
+        </button>
+      </template>
     </div>
   </div>
 </template>
@@ -211,6 +218,16 @@ const prevMap = () => {
     currentMapDayIndex.value--;
   }
 };
+
+function retrySurvey() {
+  currentQuestionIndex.value = 0;
+  answers.value.fill(null);
+  surveyCompleted.value = false;
+  result.value = null;
+  isSubmitting.value = false;
+  currentMapDayIndex.value = 0;
+  mapUrls.value = [];
+}
 
 </script>
 
