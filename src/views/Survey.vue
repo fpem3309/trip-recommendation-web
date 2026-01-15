@@ -55,15 +55,8 @@
           <div class="map-slider">
             <button @click="prevMap" :disabled="currentMapDayIndex === 0" class="slider-nav prev">&lt;</button>
             <div class="map-container">
-              <iframe
-                v-if="mapUrls[currentMapDayIndex]"
-                :key="currentMapDayIndex"
-                width="100%"
-                height="500"
-                style="border:0"
-                loading="lazy"
-                allowfullscreen
-                referrerpolicy="no-referrer-when-downgrade"
+              <iframe v-if="mapUrls[currentMapDayIndex]" :key="currentMapDayIndex" width="100%" height="500"
+                style="border:0" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"
                 :src="mapUrls[currentMapDayIndex]">
               </iframe>
               <div v-else class="no-map-data">
@@ -73,7 +66,8 @@
                 {{ currentMapDayIndex + 1 }}일차
               </div>
             </div>
-            <button @click="nextMap" :disabled="currentMapDayIndex >= mapUrls.length - 1" class="slider-nav next">&gt;</button>
+            <button @click="nextMap" :disabled="currentMapDayIndex >= mapUrls.length - 1"
+              class="slider-nav next">&gt;</button>
           </div>
         </div>
         <ul class="itinerary-list">
@@ -113,10 +107,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onBeforeMount, } from 'vue';
+import { ref, computed, onBeforeMount, onBeforeUnmount } from 'vue';
+import { onBeforeRouteLeave } from 'vue-router';
 import api from '../api';
 import Swal from 'sweetalert2';
 import { generateMapUrls } from '../map';
+import swal from 'sweetalert2';
 
 const questions = ref([]);
 const currentQuestionIndex = ref(0);
@@ -126,6 +122,15 @@ const result = ref(null);
 const isSubmitting = ref(false);
 const currentMapDayIndex = ref(0);
 const mapUrls = ref([]);
+
+const handleBeforeUnload = (event) => {
+  if (!surveyCompleted.value) {
+    event.preventDefault();
+    // 크롬/최신 브라우저 대응: returnValue에 빈 문자열이라도 넣어야 경고창이 뜸
+    event.returnValue = '';
+    return ''; // 구형 브라우저 대응
+  }
+};
 
 onBeforeMount(async () => {
   try {
@@ -139,6 +144,34 @@ onBeforeMount(async () => {
       title: '질문을 받아오지 못했습니다.',
       text: error.response.data.message
     });
+  }
+  window.addEventListener('beforeunload', handleBeforeUnload);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('beforeunload', handleBeforeUnload);
+});
+
+onBeforeRouteLeave((to, from, next) => {
+  if (!surveyCompleted.value) {
+    swal.fire({
+      title: '정말로 페이지를 떠나시겠습니까?',
+      text: "설문이 완료되지 않았습니다.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: '예',
+      cancelButtonText: '아니오'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        next();
+      } else {
+        next(false);
+      }
+    });
+  } else {
+    next();
   }
 });
 
